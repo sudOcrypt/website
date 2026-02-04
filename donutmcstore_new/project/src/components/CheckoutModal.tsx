@@ -62,7 +62,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
           body: JSON.stringify({
             items: checkoutItems,
             minecraft_username: minecraftUsername.trim(),
-            success_url: `${window.location.origin}/orders`,
+            success_url: `${window.location.origin}/order-success`,
             cancel_url: `${window.location.origin}/cart`,
           }),
         }

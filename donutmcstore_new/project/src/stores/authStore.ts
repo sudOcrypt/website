@@ -56,6 +56,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                   discord_id: discordMeta.provider_id || discordMeta.sub,
                   discord_username: discordMeta.full_name || discordMeta.name || discordMeta.custom_claims?.global_name || 'Unknown',
                   discord_avatar: discordMeta.avatar_url,
+                  email: session.user.email || null,
                 })
                 .select()
                 .single();
@@ -73,6 +74,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 .update({
                   discord_username: discordMeta.full_name || discordMeta.name || existingUser.discord_username,
                   discord_avatar: discordMeta.avatar_url || existingUser.discord_avatar,
+                  email: session.user.email ?? existingUser.email,
                 })
                 .eq('id', session.user.id);
 

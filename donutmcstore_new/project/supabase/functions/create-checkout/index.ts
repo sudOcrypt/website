@@ -87,12 +87,49 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
     const supabaseService = createClient(
       supabaseUrl,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Validate each item against DB; use authoritative price/title/stripe_price_id
+    const validatedItems: { product_id: string; title: string; price: number; stripe_price_id: string | null; quantity: number }[] = [];
+    for (const item of items) {
+      const { data: product, error: productError } = await supabaseService
+        .from("products")
+        .select("id, title, price, stripe_price_id, is_active, stock")
+        .eq("id", item.product_id)
+        .single();
+
+      if (productError || !product) {
+        return new Response(
+          JSON.stringify({ error: `Product not found: ${item.product_id}` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (!product.is_active) {
+        return new Response(
+          JSON.stringify({ error: `Product is not available: ${product.title}` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (product.stock < item.quantity) {
+        return new Response(
+          JSON.stringify({ error: `Insufficient stock for ${product.title} (requested: ${item.quantity}, available: ${product.stock})` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      validatedItems.push({
+        product_id: product.id,
+        title: product.title,
+        price: product.price,
+        stripe_price_id: product.stripe_price_id,
+        quantity: item.quantity,
+      });
+    }
+
+    const totalAmount = validatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const { data: order, error: orderError } = await supabaseService
       .from("orders")
@@ -113,7 +150,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const orderItems = items.map((item) => ({
+    const orderItems = validatedItems.map((item) => ({
       order_id: order.id,
       product_id: item.product_id,
       quantity: item.quantity,
@@ -122,16 +159,19 @@ Deno.serve(async (req: Request) => {
 
     await supabaseService.from("order_items").insert(orderItems);
 
-    const lineItems = items.map((item) => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: item.title,
+    const lineItems = validatedItems.map((item) => {
+      if (item.stripe_price_id) {
+        return { price: item.stripe_price_id, quantity: item.quantity };
+      }
+      return {
+        price_data: {
+          currency: "usd",
+          product_data: { name: item.title },
+          unit_amount: Math.round(item.price * 100),
         },
-        unit_amount: Math.round(item.price * 100),
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      };
+    });
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],

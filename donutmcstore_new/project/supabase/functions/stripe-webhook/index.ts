@@ -90,24 +90,41 @@ Deno.serve(async (req: Request) => {
         const orderId = session.metadata?.order_id;
 
         if (orderId) {
-          await supabase
+          const { data: updated } = await supabase
             .from("orders")
-            .update({ status: "processing" })
-            .eq("id", orderId);
-
-          const { data: order } = await supabase
-            .from("orders")
-            .select("*, users(discord_username)")
+            .update({ status: "completed", stock_decremented: true })
             .eq("id", orderId)
-            .single();
+            .eq("stock_decremented", false)
+            .select("id")
+            .maybeSingle();
 
-          if (order) {
-            await supabase.from("admin_notifications").insert({
-              type: "new_order",
-              title: "New Order Received",
-              message: `Order #${orderId.slice(0, 8).toUpperCase()} from ${order.users?.discord_username || "Unknown"} - $${order.total_amount}`,
-              reference_id: orderId,
-            });
+          if (updated) {
+            const { data: items } = await supabase
+              .from("order_items")
+              .select("product_id, quantity")
+              .eq("order_id", orderId);
+
+            for (const item of items || []) {
+              await supabase.rpc("decrement_product_stock", {
+                p_product_id: item.product_id,
+                p_quantity: item.quantity,
+              });
+            }
+
+            const { data: order } = await supabase
+              .from("orders")
+              .select("*, users(discord_username)")
+              .eq("id", orderId)
+              .single();
+
+            if (order) {
+              await supabase.from("admin_notifications").insert({
+                type: "new_order",
+                title: "New Order Received",
+                message: `Order #${orderId.slice(0, 8).toUpperCase()} from ${order.users?.discord_username || "Unknown"} - $${order.total_amount}`,
+                reference_id: orderId,
+              });
+            }
           }
         }
         break;
@@ -118,10 +135,27 @@ Deno.serve(async (req: Request) => {
         const orderId = paymentIntent.metadata?.order_id;
 
         if (orderId) {
-          await supabase
+          const { data: updated } = await supabase
             .from("orders")
-            .update({ status: "processing" })
-            .eq("id", orderId);
+            .update({ status: "completed", stock_decremented: true })
+            .eq("id", orderId)
+            .eq("stock_decremented", false)
+            .select("id")
+            .maybeSingle();
+
+          if (updated) {
+            const { data: items } = await supabase
+              .from("order_items")
+              .select("product_id, quantity")
+              .eq("order_id", orderId);
+
+            for (const item of items || []) {
+              await supabase.rpc("decrement_product_stock", {
+                p_product_id: item.product_id,
+                p_quantity: item.quantity,
+              });
+            }
+          }
         }
         break;
       }
@@ -150,8 +184,12 @@ Deno.serve(async (req: Request) => {
       case "product.updated": {
         const product = event.data.object;
         const stripeProductId = product.id;
-        const isActive = product.active;
         const metadata = product.metadata || {};
+
+        const isActiveFromMeta = metadata.is_active;
+        const resolvedActive = isActiveFromMeta !== undefined && isActiveFromMeta !== null
+          ? (isActiveFromMeta === "true" || isActiveFromMeta === true)
+          : product.active;
 
         const productData = {
           stripe_product_id: stripeProductId,
@@ -159,8 +197,8 @@ Deno.serve(async (req: Request) => {
           description: product.description || "",
           image_url: product.images?.[0] || null,
           category: mapStripeCategory(metadata),
-          is_active: isActive,
-          stock: parseInt(metadata.stock || "999", 10),
+          is_active: resolvedActive,
+          stock: Math.max(0, parseInt(metadata.stock || "999", 10)),
           sort_order: parseInt(metadata.sort_order || "0", 10),
         };
 
@@ -196,7 +234,9 @@ Deno.serve(async (req: Request) => {
       case "price.created":
       case "price.updated": {
         const price = event.data.object;
-        const stripeProductId = price.product;
+        const stripeProductId = typeof price.product === "string" ? price.product : price.product?.id;
+        if (!stripeProductId) break;
+
         const unitAmount = price.unit_amount || 0;
         const priceInDollars = unitAmount / 100;
 

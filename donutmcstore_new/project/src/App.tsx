@@ -9,6 +9,7 @@ import { FreeMoneyPage } from './pages/FreeMoneyPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { SchematicsPage } from './pages/SchematicsPage';
 import { OrdersPage } from './pages/OrdersPage';
+import { OrderSuccessPage } from './pages/OrderSuccessPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminOverview } from './pages/admin/AdminOverview';
@@ -224,6 +225,7 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/order-success" element={<OrderSuccessPage />} />
               <Route path="/banned" element={<BannedPage />} />
               <Route path="/sell" element={<ProtectedRoute><SellPage /></ProtectedRoute>} />
               <Route path="/free-money" element={<ProtectedRoute><FreeMoneyPage /></ProtectedRoute>} />

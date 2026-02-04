@@ -92,6 +92,11 @@ Deno.serve(async (req: Request) => {
       const priceInDollars = price ? (price.unit_amount || 0) / 100 : 0;
       const metadata = product.metadata || {};
 
+      const isActiveFromMeta = metadata.is_active;
+      const resolvedActive = isActiveFromMeta !== undefined && isActiveFromMeta !== null
+        ? (isActiveFromMeta === "true" || isActiveFromMeta === true)
+        : product.active;
+
       const productData = {
         stripe_product_id: product.id,
         stripe_price_id: price?.id || null,
@@ -100,8 +105,8 @@ Deno.serve(async (req: Request) => {
         image_url: product.images?.[0] || null,
         price: priceInDollars,
         category: mapStripeCategory(metadata),
-        is_active: product.active,
-        stock: parseInt(metadata.stock || "999", 10),
+        is_active: resolvedActive,
+        stock: Math.max(0, parseInt(metadata.stock || "999", 10)),
         sort_order: parseInt(metadata.sort_order || "0", 10),
       };
 

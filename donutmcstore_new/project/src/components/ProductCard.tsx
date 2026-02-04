@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ShoppingCart, Plus, Minus, Package, Sparkles, Check } from 'lucide-react';
 import type { Product } from '../types/database';
-import { useAuthStore } from '../stores/authStore';
 import { useCartStore } from '../stores/cartStore';
 
 interface ProductCardProps {
@@ -11,7 +10,6 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
-  const { isAuthenticated, signInWithDiscord } = useAuthStore();
   const addItem = useCartStore((state) => state.addItem);
 
   const hasDiscount = product.original_price && product.original_price > product.price;
@@ -20,10 +18,6 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   const handleAddToCart = () => {
-    if (!isAuthenticated) {
-      signInWithDiscord();
-      return;
-    }
     addItem(product, quantity);
     setIsAdded(true);
     setTimeout(() => {
@@ -170,7 +164,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 ) : (
                   <>
                     <ShoppingCart className="w-4 h-4" />
-                    {isAuthenticated ? 'Add to Cart' : 'Login'}
+                    Add to Cart
                   </>
                 )}
               </span>

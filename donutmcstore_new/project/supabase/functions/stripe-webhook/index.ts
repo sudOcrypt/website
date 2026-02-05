@@ -122,6 +122,42 @@ Deno.serve(async (req: Request) => {
                 message: `Order #${orderId.slice(0, 8).toUpperCase()} from ${order.users?.discord_username || "Unknown"} - $${order.total_amount}`,
                 reference_id: orderId,
               });
+
+              const { data: userData } = await supabase
+                .from("users")
+                .select("discord_id, discord_username")
+                .eq("id", order.user_id)
+                .single();
+
+              const { data: orderItems } = await supabase
+                .from("order_items")
+                .select("*, products(title, price)")
+                .eq("order_id", orderId);
+
+              if (userData?.discord_id) {
+                try {
+                  await fetch(`${supabaseUrl}/functions/v1/create-discord-ticket`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "apikey": supabaseServiceKey,
+                    },
+                    body: JSON.stringify({
+                      discord_id: userData.discord_id,
+                      username: userData.discord_username || "customer",
+                      order_id: orderId,
+                      items: orderItems?.map(item => ({
+                        name: item.products?.title || "Unknown",
+                        quantity: item.quantity,
+                        price: item.products?.price || 0,
+                      })) || [],
+                      total: order.total_amount,
+                    }),
+                  });
+                } catch (error) {
+                  console.error("Failed to create Discord ticket:", error);
+                }
+              }
             }
           }
         }

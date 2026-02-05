@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["cd donutmcstore_new/project && npm ci"]
+
+[phases.build]
+cmds = ["cd donutmcstore_new/project && npm run build"]
+
+[start]
+cmd = "cd donutmcstore_new/project && npm run preview"

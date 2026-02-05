@@ -90,23 +90,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 let isVpnSuspected = false;
                 let ispOrg = null;
                 try {
-                  const ipResponse = await fetch('https://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
+                  const ipResponse = await fetch('https://api.ipify.org?format=json');
                   const ipData = await ipResponse.json();
-                  
-                  if (ipData.status === 'success') {
-                    ipAddress = ipData.query;
-                    ispOrg = ipData.org || ipData.isp || null;
-                    
-                    const orgLower = (ipData.org || ipData.isp || '').toLowerCase();
-                    if (ipData.hosting || 
-                        orgLower.includes('vpn') ||
-                        orgLower.includes('proxy') ||
-                        orgLower.includes('hosting') ||
-                        orgLower.includes('data center') ||
-                        orgLower.includes('cloud')) {
-                      isVpnSuspected = true;
-                    }
-                  }
+                  ipAddress = ipData.ip;
                 } catch (error) {
                 }
 
@@ -142,23 +128,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               let isVpnSuspected = false;
               let ispOrg = null;
               try {
-                const ipResponse = await fetch('https://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
-                
-                if (ipData.status === 'success') {
-                  ipAddress = ipData.query;
-                  ispOrg = ipData.org || ipData.isp || null;
-                  
-                  const orgLower = (ipData.org || ipData.isp || '').toLowerCase();
-                  if (ipData.hosting || 
-                      orgLower.includes('vpn') ||
-                      orgLower.includes('proxy') ||
-                      orgLower.includes('hosting') ||
-                      orgLower.includes('data center') ||
-                      orgLower.includes('cloud')) {
-                    isVpnSuspected = true;
-                  }
-                }
+                ipAddress = ipData.ip;
               } catch (error) {
               }
 

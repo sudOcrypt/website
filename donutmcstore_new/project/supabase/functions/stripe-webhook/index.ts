@@ -297,6 +297,8 @@ Deno.serve(async (req: Request) => {
           ? (isActiveFromMeta === "true" || isActiveFromMeta === true)
           : product.active;
 
+        const newStock = Math.max(0, parseInt(metadata.stock || "999", 10));
+
         const productData = {
           stripe_product_id: stripeProductId,
           title: product.name,
@@ -304,26 +306,96 @@ Deno.serve(async (req: Request) => {
           image_url: product.images?.[0] || null,
           category: mapStripeCategory(metadata),
           is_active: resolvedActive,
-          stock: Math.max(0, parseInt(metadata.stock || "999", 10)),
+          stock: newStock,
           sort_order: parseInt(metadata.sort_order || "0", 10),
         };
 
         const { data: existing } = await supabase
           .from("products")
-          .select("id")
+          .select("id, stock, title, image_url")
           .eq("stripe_product_id", stripeProductId)
           .maybeSingle();
 
+        let shouldNotify = false;
+        let isNewProduct = false;
+
         if (existing) {
+          if (newStock > existing.stock) {
+            shouldNotify = true;
+          }
           await supabase
             .from("products")
             .update(productData)
             .eq("stripe_product_id", stripeProductId);
         } else {
+          isNewProduct = true;
+          shouldNotify = resolvedActive;
           await supabase.from("products").insert({
             ...productData,
             price: 0,
           });
+        }
+
+        if (shouldNotify) {
+          try {
+            const restockWebhookUrl = Deno.env.get("DISCORD_RESTOCK_WEBHOOK_URL");
+            if (restockWebhookUrl) {
+              const { data: productWithPrice } = await supabase
+                .from("products")
+                .select("*")
+                .eq("stripe_product_id", stripeProductId)
+                .single();
+
+              if (productWithPrice) {
+                await fetch(restockWebhookUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    embeds: [{
+                      title: isNewProduct ? "🆕 New Product Available!" : "📦 Product Restocked!",
+                      description: productWithPrice.title,
+                      color: isNewProduct ? 0x5865F2 : 0x57F287,
+                      fields: [
+                        {
+                          name: "💵 Price",
+                          value: `**$${productWithPrice.price.toFixed(2)}**`,
+                          inline: true,
+                        },
+                        {
+                          name: "📊 Stock",
+                          value: isNewProduct 
+                            ? `**${newStock} available**`
+                            : `**${existing.stock} → ${newStock}** (+${newStock - existing.stock})`,
+                          inline: true,
+                        },
+                        {
+                          name: "🏷️ Category",
+                          value: productWithPrice.category,
+                          inline: true,
+                        },
+                        ...(productWithPrice.description ? [{
+                          name: "📝 Description",
+                          value: productWithPrice.description.slice(0, 200),
+                          inline: false,
+                        }] : []),
+                      ],
+                      thumbnail: productWithPrice.image_url ? {
+                        url: productWithPrice.image_url,
+                      } : undefined,
+                      footer: {
+                        text: "DonutMC Store",
+                      },
+                      timestamp: new Date().toISOString(),
+                    }],
+                  }),
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Failed to send restock notification:", error);
+          }
         }
         break;
       }

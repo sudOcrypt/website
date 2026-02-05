@@ -90,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 let isVpnSuspected = false;
                 let ispOrg = null;
                 try {
-                  const ipResponse = await fetch('http://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
+                  const ipResponse = await fetch('https://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
                   const ipData = await ipResponse.json();
                   
                   if (ipData.status === 'success') {
@@ -142,7 +142,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               let isVpnSuspected = false;
               let ispOrg = null;
               try {
-                const ipResponse = await fetch('http://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
+                const ipResponse = await fetch('https://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
                 const ipData = await ipResponse.json();
                 
                 if (ipData.status === 'success') {

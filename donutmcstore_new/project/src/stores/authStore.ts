@@ -111,6 +111,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                   isp_organization: ispOrg,
                 }).eq('id', session.user.id);
                 
+                try {
+                  await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assign-discord-role`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    },
+                    body: JSON.stringify({ discord_id: newUser.discord_id }),
+                  });
+                } catch (error) {
+                }
+                
                 const banned = await get().checkBanStatus(newUser.id, newUser.discord_id);
                 set({ user: newUser, isAuthenticated: true, isBanned: banned });
               }

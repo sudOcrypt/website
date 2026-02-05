@@ -50,6 +50,14 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         quantity: item.quantity,
       }));
 
+      // Enforce $2.00 minimum order
+      const MINIMUM_ORDER = 2.00;
+      const currentTotal = getTotal();
+      if (currentTotal < MINIMUM_ORDER) {
+        setError(`Minimum order amount is $${MINIMUM_ORDER.toFixed(2)}`);
+        return;
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
         {
@@ -151,6 +159,13 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 ${getTotal().toFixed(2)}
               </span>
             </div>
+            {getTotal() < 2.00 && (
+              <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <p className="text-xs text-amber-400 text-center">
+                  ⚠️ Minimum order: $2.00 (Add ${(2.00 - getTotal()).toFixed(2)} more)
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
@@ -168,7 +183,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || getTotal() < 2.00}
             className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-500/25"
           >
             {isSubmitting ? (

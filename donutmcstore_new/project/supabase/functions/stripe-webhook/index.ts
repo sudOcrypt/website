@@ -39,10 +39,8 @@ async function verifyStripeSignature(payload: string, signature: string): Promis
 
 function mapStripeCategory(metadata: Record<string, string> | null): string {
   const category = metadata?.category?.toLowerCase();
-  if (category === 'coins' || category === 'items' || category === 'bases') {
-    return category;
-  }
-  return 'items';
+  // Return the category as-is if provided, otherwise default to 'items'
+  return category || 'items';
 }
 
 Deno.serve(async (req: Request) => {
@@ -241,13 +239,37 @@ Deno.serve(async (req: Request) => {
         const priceInDollars = unitAmount / 100;
 
         if (price.active) {
-          await supabase
+          // Check if product exists first
+          const { data: existingProduct } = await supabase
             .from("products")
-            .update({
+            .select("id")
+            .eq("stripe_product_id", stripeProductId)
+            .maybeSingle();
+
+          if (existingProduct) {
+            // Product exists, update the price
+            await supabase
+              .from("products")
+              .update({
+                price: priceInDollars,
+                stripe_price_id: price.id,
+              })
+              .eq("stripe_product_id", stripeProductId);
+          } else {
+            // Product doesn't exist yet, create it with the price
+            // This handles the edge case where price.created fires before product.created
+            await supabase.from("products").insert({
+              stripe_product_id: stripeProductId,
+              title: "Pending Product", // Will be updated when product.created fires
+              description: "",
+              category: "items",
               price: priceInDollars,
               stripe_price_id: price.id,
-            })
-            .eq("stripe_product_id", stripeProductId);
+              is_active: false, // Will be updated when product.created fires
+              stock: 0,
+              sort_order: 0,
+            });
+          }
         }
         break;
       }

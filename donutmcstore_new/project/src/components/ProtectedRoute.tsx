@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const { isAuthenticated, isLoading, user, isBanned } = useAuthStore();
 
   if (isLoading) {
     return (
@@ -19,6 +19,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         </div>
       </div>
     );
+  }
+
+  // Redirect banned users to banned page
+  if (isAuthenticated && isBanned) {
+    return <Navigate to="/banned" replace />;
   }
 
   if (!isAuthenticated || !user) {

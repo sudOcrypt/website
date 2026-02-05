@@ -27,8 +27,11 @@ interface CheckoutRequest {
 }
 
 Deno.serve(async (req: Request) => {
+  console.log('🔵 create-checkout invoked, method:', req.method);
+  
   try {
     if (req.method === "OPTIONS") {
+      console.log('✅ OPTIONS request - returning CORS headers');
       return new Response(null, {
         status: 200,
         headers: corsHeaders,
@@ -36,6 +39,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (req.method !== "POST") {
+      console.log('❌ Invalid method:', req.method);
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -43,8 +47,23 @@ Deno.serve(async (req: Request) => {
     }
 
     const authHeader = req.headers.get("Authorization");
+    const apikeyHeader = req.headers.get("apikey");
+    console.log('🔑 Auth header present:', !!authHeader);
+    console.log('🔑 Apikey header present:', !!apikeyHeader);
+    console.log('🔑 Auth header value:', authHeader?.substring(0, 30));
+    console.log('🔑 Apikey header value:', apikeyHeader?.substring(0, 30));
+    
     if (!authHeader) {
+      console.log('❌ No authorization header');
       return new Response(JSON.stringify({ error: "No authorization header" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    if (!apikeyHeader) {
+      console.log('❌ No apikey header');
+      return new Response(JSON.stringify({ error: "No apikey header" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -57,7 +76,10 @@ Deno.serve(async (req: Request) => {
     });
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log('👤 User auth result:', { userId: user?.id, error: authError?.message });
+    
     if (authError || !user) {
+      console.log('❌ Auth failed:', authError);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -130,6 +152,22 @@ Deno.serve(async (req: Request) => {
     }
 
     const totalAmount = validatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    // Enforce $2.00 minimum order (server-side validation)
+    const MINIMUM_ORDER = 2.00;
+    console.log('💰 Total amount:', totalAmount, '| Minimum:', MINIMUM_ORDER);
+    if (totalAmount < MINIMUM_ORDER) {
+      console.log('❌ Order below minimum');
+      return new Response(
+        JSON.stringify({ 
+          error: `Minimum order amount is $${MINIMUM_ORDER.toFixed(2)}. Your cart total is $${totalAmount.toFixed(2)}` 
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     const { data: order, error: orderError } = await supabaseService
       .from("orders")

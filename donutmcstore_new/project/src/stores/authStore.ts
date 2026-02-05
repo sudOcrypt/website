@@ -6,16 +6,39 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isBanned: boolean;
   initialize: () => Promise<void>;
   signInWithDiscord: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  checkBanStatus: (userId: string, discordId: string) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isLoading: true,
   isAuthenticated: false,
+  isBanned: false,
+
+  checkBanStatus: async (userId: string, discordId: string) => {
+    try {
+      const { data: bans, error } = await supabase
+        .from('bans')
+        .select('*')
+        .in('ban_value', [userId, discordId])
+        .or('expires_at.is.null,expires_at.gt.now()');
+
+      if (error) {
+        console.error('Error checking ban status:', error);
+        return false;
+      }
+
+      return (bans && bans.length > 0) || false;
+    } catch (error) {
+      console.error('Error checking ban status:', error);
+      return false;
+    }
+  },
 
   initialize: async () => {
     try {
@@ -29,17 +52,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .maybeSingle();
 
         if (profile) {
-          set({ user: profile, isAuthenticated: true, isLoading: false });
+          const banned = await get().checkBanStatus(profile.id, profile.discord_id);
+          set({ user: profile, isAuthenticated: true, isLoading: false, isBanned: banned });
         } else {
-          set({ user: null, isAuthenticated: false, isLoading: false });
+          set({ user: null, isAuthenticated: false, isLoading: false, isBanned: false });
         }
       } else {
-        set({ user: null, isAuthenticated: false, isLoading: false });
+        set({ user: null, isAuthenticated: false, isLoading: false, isBanned: false });
       }
 
       supabase.auth.onAuthStateChange((event, session) => {
         (async () => {
-          if (event === 'SIGNED_IN' && session?.user) {
+          if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
             const discordMeta = session.user.user_metadata;
 
             const { data: existingUser } = await supabase
@@ -62,11 +86,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 .single();
 
               if (!error && newUser) {
+                let ipAddress = null;
+                let isVpnSuspected = false;
+                let ispOrg = null;
+                try {
+                  const ipResponse = await fetch('http://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
+                  const ipData = await ipResponse.json();
+                  
+                  if (ipData.status === 'success') {
+                    ipAddress = ipData.query;
+                    ispOrg = ipData.org || ipData.isp || null;
+                    
+                    const orgLower = (ipData.org || ipData.isp || '').toLowerCase();
+                    if (ipData.hosting || 
+                        orgLower.includes('vpn') ||
+                        orgLower.includes('proxy') ||
+                        orgLower.includes('hosting') ||
+                        orgLower.includes('data center') ||
+                        orgLower.includes('cloud')) {
+                      isVpnSuspected = true;
+                    }
+                  }
+                } catch (error) {
+                }
+
                 await supabase.from('login_logs').insert({
                   user_id: session.user.id,
+                  ip_address: ipAddress,
                   user_agent: navigator.userAgent,
+                  is_vpn_suspected: isVpnSuspected,
+                  isp_org: ispOrg,
                 });
-                set({ user: newUser, isAuthenticated: true });
+
+                await supabase.from('users').update({
+                  last_ip_address: ipAddress,
+                  last_login_at: new Date().toISOString(),
+                  is_vpn_user: isVpnSuspected,
+                  isp_organization: ispOrg,
+                }).eq('id', session.user.id);
+                
+                const banned = await get().checkBanStatus(newUser.id, newUser.discord_id);
+                set({ user: newUser, isAuthenticated: true, isBanned: banned });
               }
             } else {
               await supabase
@@ -78,10 +138,44 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 })
                 .eq('id', session.user.id);
 
-              await supabase.from('login_logs').insert({
-                user_id: session.user.id,
-                user_agent: navigator.userAgent,
-              });
+              let ipAddress = null;
+              let isVpnSuspected = false;
+              let ispOrg = null;
+              try {
+                const ipResponse = await fetch('http://ip-api.com/json/?fields=status,message,query,isp,org,as,hosting');
+                const ipData = await ipResponse.json();
+                
+                if (ipData.status === 'success') {
+                  ipAddress = ipData.query;
+                  ispOrg = ipData.org || ipData.isp || null;
+                  
+                  const orgLower = (ipData.org || ipData.isp || '').toLowerCase();
+                  if (ipData.hosting || 
+                      orgLower.includes('vpn') ||
+                      orgLower.includes('proxy') ||
+                      orgLower.includes('hosting') ||
+                      orgLower.includes('data center') ||
+                      orgLower.includes('cloud')) {
+                    isVpnSuspected = true;
+                  }
+                }
+              } catch (error) {
+              }
+
+                await supabase.from('login_logs').insert({
+                  user_id: session.user.id,
+                  ip_address: ipAddress,
+                  user_agent: navigator.userAgent,
+                  is_vpn_suspected: isVpnSuspected,
+                  isp_org: ispOrg,
+                });
+
+                await supabase.from('users').update({
+                  last_ip_address: ipAddress,
+                  last_login_at: new Date().toISOString(),
+                  is_vpn_user: isVpnSuspected,
+                  isp_organization: ispOrg,
+                }).eq('id', session.user.id);
 
               const { data: updatedUser } = await supabase
                 .from('users')
@@ -89,10 +183,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 .eq('id', session.user.id)
                 .single();
 
-              set({ user: updatedUser, isAuthenticated: true });
+              const banned = await get().checkBanStatus(updatedUser.id, updatedUser.discord_id);
+              set({ user: updatedUser, isAuthenticated: true, isBanned: banned });
             }
           } else if (event === 'SIGNED_OUT') {
-            set({ user: null, isAuthenticated: false });
+            set({ user: null, isAuthenticated: false, isBanned: false });
           }
         })();
       });
@@ -113,7 +208,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     await supabase.auth.signOut();
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, isBanned: false });
   },
 
   refreshUser: async () => {
@@ -126,7 +221,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         .maybeSingle();
 
       if (profile) {
-        set({ user: profile, isAuthenticated: true });
+        const banned = await get().checkBanStatus(profile.id, profile.discord_id);
+        set({ user: profile, isAuthenticated: true, isBanned: banned });
       }
     }
   },

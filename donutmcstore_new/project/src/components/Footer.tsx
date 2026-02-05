@@ -12,10 +12,12 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="flex items-center gap-3 mb-6 group">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">D</span>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                <img
+                  src="/logo.png"
+                  alt="DonutMC"
+                  className="relative w-12 h-12 rounded-full transform group-hover:scale-105 transition-transform"
+                />
               </div>
               <div>
                 <span className="text-xl font-bold gradient-text-animated block">DonutMC</span>

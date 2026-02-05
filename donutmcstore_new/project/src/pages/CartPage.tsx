@@ -26,18 +26,21 @@ export function CartPage() {
         <h1 className="text-3xl font-bold text-white mb-8">Shopping Cart</h1>
 
         {items.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gray-800/50 rounded-full flex items-center justify-center">
-              <ShoppingCart className="w-10 h-10 text-gray-600" />
+          <div className="text-center py-20 animate-fade-in-up">
+            <div className="relative w-32 h-32 mx-auto mb-8">
+              <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" />
+              <div className="relative w-full h-full bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-full flex items-center justify-center border border-white/10">
+                <ShoppingCart className="w-16 h-16 text-gray-600" />
+              </div>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-300 mb-2">Your cart is empty</h2>
-            <p className="text-gray-500 mb-8">Add some items to get started!</p>
+            <h2 className="text-3xl font-bold gradient-text-animated mb-3">Your cart is empty</h2>
+            <p className="text-gray-400 mb-8 text-lg">Discover amazing items and start shopping!</p>
             <Link
               to="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-blue-500 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-blue-500 transition-all hover:-translate-y-1 shadow-lg shadow-cyan-500/25"
             >
               Browse Shop
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
         ) : (

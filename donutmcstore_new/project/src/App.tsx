@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
@@ -210,10 +210,60 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const initialize = useAuthStore((state) => state.initialize);
+  const isBanned = useAuthStore((state) => state.isBanned);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  useEffect(() => {
+    if (isAuthenticated && isBanned && window.location.pathname !== '/banned') {
+      window.location.href = '/banned';
+    }
+  }, [isAuthenticated, isBanned]);
+
+  if (isLoading) {
+    return (
+      <>
+        <GlobalBackground />
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-cyan-500/30 rounded-full blur-xl animate-pulse" />
+              <div className="relative w-16 h-16 mx-auto border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+            <p className="text-gray-400 text-lg">Loading...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (isAuthenticated && isBanned && window.location.pathname !== '/banned') {
+    return (
+      <>
+        <GlobalBackground />
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-red-500/30 rounded-full blur-xl animate-pulse" />
+              <div className="relative w-16 h-16 mx-auto border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+            <p className="text-red-400 text-lg">Access Denied - Redirecting...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const BannedRedirect = ({ children }: { children: React.ReactNode }) => {
+    if (isAuthenticated && isBanned) {
+      return <Navigate to="/banned" replace />;
+    }
+    return <>{children}</>;
+  };
 
   return (
     <>
@@ -223,17 +273,17 @@ function AppContent() {
         <main className="flex-1">
           <PageTransition>
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/order-success" element={<OrderSuccessPage />} />
+              <Route path="/" element={<BannedRedirect><HomePage /></BannedRedirect>} />
+              <Route path="/cart" element={<BannedRedirect><CartPage /></BannedRedirect>} />
+              <Route path="/order-success" element={<BannedRedirect><OrderSuccessPage /></BannedRedirect>} />
               <Route path="/banned" element={<BannedPage />} />
-              <Route path="/sell" element={<ProtectedRoute><SellPage /></ProtectedRoute>} />
-              <Route path="/free-money" element={<ProtectedRoute><FreeMoneyPage /></ProtectedRoute>} />
-              <Route path="/reviews" element={<ReviewsPage />} />
-              <Route path="/schematics" element={<ProtectedRoute><SchematicsPage /></ProtectedRoute>} />
-              <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route path="/sell" element={<BannedRedirect><ProtectedRoute><SellPage /></ProtectedRoute></BannedRedirect>} />
+              <Route path="/free-money" element={<BannedRedirect><ProtectedRoute><FreeMoneyPage /></ProtectedRoute></BannedRedirect>} />
+              <Route path="/reviews" element={<BannedRedirect><ReviewsPage /></BannedRedirect>} />
+              <Route path="/schematics" element={<BannedRedirect><ProtectedRoute><SchematicsPage /></ProtectedRoute></BannedRedirect>} />
+              <Route path="/orders" element={<BannedRedirect><ProtectedRoute><OrdersPage /></ProtectedRoute></BannedRedirect>} />
+              <Route path="/profile" element={<BannedRedirect><ProtectedRoute><ProfilePage /></ProtectedRoute></BannedRedirect>} />
+              <Route path="/admin" element={<BannedRedirect><AdminLayout /></BannedRedirect>}>
                 <Route index element={<AdminOverview />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="products" element={<AdminProducts />} />

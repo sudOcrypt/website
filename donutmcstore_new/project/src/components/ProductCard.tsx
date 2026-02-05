@@ -77,11 +77,13 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent" />
           </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gray-800/50 to-gray-900/50 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-gray-800/50 to-gray-900/50 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFmMmQzZCIgb3BhY2l0eT0iMC4zIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20" />
             <div className="relative">
-              <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-xl" />
-              <Package className="w-20 h-20 text-gray-600 relative" />
+              <div className="absolute inset-0 bg-cyan-500/20 rounded-2xl blur-2xl animate-pulse" />
+              <Package className="w-24 h-24 text-gray-600 relative drop-shadow-glow" />
             </div>
+            <p className="mt-4 text-gray-500 text-sm font-medium">No Image Available</p>
           </div>
         )}
 

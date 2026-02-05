@@ -5,11 +5,10 @@ import { CategoryTabs } from '../components/CategoryTabs';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types/database';
 
-type Category = 'all' | 'coins' | 'items' | 'bases';
-
 export function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [category, setCategory] = useState<Category>('all');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [category, setCategory] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -26,6 +25,12 @@ export function HomePage() {
 
       if (error) throw error;
       setProducts(data || []);
+
+      // Extract unique categories from products
+      const uniqueCategories = Array.from(
+        new Set(data?.map(p => p.category).filter(Boolean) || [])
+      );
+      setCategories(uniqueCategories);
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
@@ -160,7 +165,11 @@ export function HomePage() {
           </div>
 
           <div className="mb-12">
-            <CategoryTabs activeCategory={category} onChange={setCategory} />
+            <CategoryTabs 
+              categories={categories} 
+              activeCategory={category} 
+              onChange={setCategory} 
+            />
           </div>
 
           {isLoading ? (

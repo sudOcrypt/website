@@ -10,6 +10,10 @@ export type Database = {
           email: string | null;
           minecraft_username: string | null;
           is_admin: boolean;
+          last_ip_address: string | null;
+          last_login_at: string | null;
+          is_vpn_user: boolean;
+          isp_organization: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -21,6 +25,10 @@ export type Database = {
           email?: string | null;
           minecraft_username?: string | null;
           is_admin?: boolean;
+          last_ip_address?: string | null;
+          last_login_at?: string | null;
+          is_vpn_user?: boolean;
+          isp_organization?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -32,6 +40,10 @@ export type Database = {
           email?: string | null;
           minecraft_username?: string | null;
           is_admin?: boolean;
+          last_ip_address?: string | null;
+          last_login_at?: string | null;
+          is_vpn_user?: boolean;
+          isp_organization?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -39,7 +51,7 @@ export type Database = {
       products: {
         Row: {
           id: string;
-          category: 'coins' | 'items' | 'bases';
+          category: string;
           title: string;
           description: string | null;
           image_url: string | null;
@@ -55,7 +67,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          category: 'coins' | 'items' | 'bases';
+          category: string;
           title: string;
           description?: string | null;
           image_url?: string | null;
@@ -71,7 +83,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          category?: 'coins' | 'items' | 'bases';
+          category?: string;
           title?: string;
           description?: string | null;
           image_url?: string | null;
@@ -96,6 +108,7 @@ export type Database = {
           notes: string | null;
           stripe_session_id: string | null;
           discord_id: string | null;
+          stock_decremented: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -108,6 +121,7 @@ export type Database = {
           notes?: string | null;
           stripe_session_id?: string | null;
           discord_id?: string | null;
+          stock_decremented?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -120,6 +134,7 @@ export type Database = {
           notes?: string | null;
           stripe_session_id?: string | null;
           discord_id?: string | null;
+          stock_decremented?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -313,6 +328,8 @@ export type Database = {
           user_id: string;
           ip_address: string | null;
           user_agent: string | null;
+          is_vpn_suspected: boolean;
+          isp_org: string | null;
           created_at: string;
         };
         Insert: {
@@ -320,6 +337,8 @@ export type Database = {
           user_id: string;
           ip_address?: string | null;
           user_agent?: string | null;
+          is_vpn_suspected?: boolean;
+          isp_org?: string | null;
           created_at?: string;
         };
         Update: {
@@ -327,6 +346,8 @@ export type Database = {
           user_id?: string;
           ip_address?: string | null;
           user_agent?: string | null;
+          is_vpn_suspected?: boolean;
+          isp_org?: string | null;
           created_at?: string;
         };
       };

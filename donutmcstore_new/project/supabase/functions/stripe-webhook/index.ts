@@ -178,6 +178,57 @@ Deno.serve(async (req: Request) => {
                 } catch (error) {
                   console.error("Failed to assign customer role:", error);
                 }
+
+                try {
+                  const webhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
+                  if (webhookUrl) {
+                    const itemsList = orderItems?.map(item => 
+                      `• ${item.products?.title || "Unknown"} x${item.quantity} - $${((item.products?.price || 0) * item.quantity / 100).toFixed(2)}`
+                    ).join('\n') || 'No items';
+
+                    await fetch(webhookUrl, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        embeds: [{
+                          title: "💰 New Purchase Completed",
+                          description: `A new order has been completed!`,
+                          color: 0x57F287,
+                          fields: [
+                            {
+                              name: "👤 Customer",
+                              value: `<@${userData.discord_id}> (${userData.discord_username})`,
+                              inline: true,
+                            },
+                            {
+                              name: "📦 Order ID",
+                              value: `\`${orderId.slice(0, 8).toUpperCase()}\``,
+                              inline: true,
+                            },
+                            {
+                              name: "💵 Total Amount",
+                              value: `**$${(order.total_amount / 100).toFixed(2)}**`,
+                              inline: true,
+                            },
+                            {
+                              name: "🛒 Items Purchased",
+                              value: itemsList,
+                              inline: false,
+                            },
+                          ],
+                          footer: {
+                            text: "DonutMC Store",
+                          },
+                          timestamp: new Date().toISOString(),
+                        }],
+                      }),
+                    });
+                  }
+                } catch (error) {
+                  console.error("Failed to send webhook notification:", error);
+                }
               }
             }
           }

@@ -318,9 +318,11 @@ Deno.serve(async (req: Request) => {
 
         let shouldNotify = false;
         let isNewProduct = false;
+        let oldStock = 0;
 
         if (existing) {
-          if (newStock > existing.stock) {
+          oldStock = existing.stock || 0;
+          if (newStock > oldStock && oldStock > 0) {
             shouldNotify = true;
           }
           await supabase
@@ -329,14 +331,14 @@ Deno.serve(async (req: Request) => {
             .eq("stripe_product_id", stripeProductId);
         } else {
           isNewProduct = true;
-          shouldNotify = resolvedActive;
+          shouldNotify = resolvedActive && newStock > 0 && newStock < 999;
           await supabase.from("products").insert({
             ...productData,
             price: 0,
           });
         }
 
-        if (shouldNotify) {
+        if (shouldNotify && event.type === "product.updated") {
           try {
             const restockWebhookUrl = Deno.env.get("DISCORD_RESTOCK_WEBHOOK_URL");
             if (restockWebhookUrl) {
@@ -367,7 +369,7 @@ Deno.serve(async (req: Request) => {
                           name: "📊 Stock",
                           value: isNewProduct 
                             ? `**${newStock} available**`
-                            : `**${existing.stock} → ${newStock}** (+${newStock - existing.stock})`,
+                            : `**${oldStock} → ${newStock}** (+${newStock - oldStock})`,
                           inline: true,
                         },
                         {

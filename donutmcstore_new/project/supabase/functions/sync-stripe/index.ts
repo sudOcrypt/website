@@ -14,10 +14,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 
 function mapStripeCategory(metadata: Record<string, string> | null): string {
   const category = metadata?.category?.toLowerCase();
-  if (category === 'coins' || category === 'items' || category === 'bases') {
-    return category;
-  }
-  return 'items';
+  return category || 'items';
 }
 
 Deno.serve(async (req: Request) => {

@@ -47,21 +47,25 @@ export function HomePage() {
       icon: Shield,
       title: 'Secure Trading',
       description: 'All transactions are protected and verified',
+      image: '/ender-chest.png',
     },
     {
       icon: Clock,
       title: 'Fast Delivery',
       description: 'Items delivered within 24 hours',
+      image: '/tnt-minecart.png',
     },
     {
       icon: Sparkles,
       title: 'Premium Quality',
       description: 'Only the best items from DonutSMP',
+      image: '/golden-apple.png',
     },
     {
       icon: Zap,
       title: 'Instant Support',
       description: '24/7 Discord support available',
+      image: '/emerald.png',
     },
   ];
 
@@ -131,7 +135,15 @@ export function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 <div className="relative w-12 h-12 md:w-14 md:h-14 mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 md:w-7 md:h-7 text-white relative" />
+                  {feature.image ? (
+                    <img 
+                      src={feature.image} 
+                      alt={feature.title} 
+                      className="w-8 h-8 md:w-9 md:h-9 object-contain pixelated"
+                    />
+                  ) : (
+                    <feature.icon className="w-6 h-6 md:w-7 md:h-7 text-white relative" />
+                  )}
                 </div>
 
                 <h3 className="relative font-semibold text-white text-base md:text-lg mb-1 md:mb-2 group-hover:text-cyan-400 transition-colors">

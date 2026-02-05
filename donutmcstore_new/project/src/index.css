@@ -19,6 +19,12 @@
     scroll-behavior: smooth;
   }
 
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+
   body {
     @apply bg-gray-950 text-white antialiased;
     min-height: 100vh;

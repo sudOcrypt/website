@@ -129,7 +129,7 @@ export function HomePage() {
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="group relative p-5 md:p-6 glass rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:border-cyan-500/30 card-tilt animate-fade-in-up"
+                className="group relative p-5 md:p-6 glass rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:border-cyan-500/30 card-tilt animate-fade-in-up"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />

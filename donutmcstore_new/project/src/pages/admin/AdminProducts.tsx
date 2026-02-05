@@ -13,6 +13,8 @@ export function AdminProducts() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
+  const [editingStockId, setEditingStockId] = useState<string | null>(null);
+  const [newStockValue, setNewStockValue] = useState('');
 
   const [form, setForm] = useState({
     category: 'coins' as Product['category'],
@@ -170,6 +172,64 @@ export function AdminProducts() {
     }
   };
 
+  const startEditingStock = (productId: string, currentStock: number) => {
+    setEditingStockId(productId);
+    setNewStockValue(currentStock.toString());
+  };
+
+  const cancelEditingStock = () => {
+    setEditingStockId(null);
+    setNewStockValue('');
+  };
+
+  const updateStock = async (productId: string) => {
+    const newStock = parseInt(newStockValue);
+    if (isNaN(newStock) || newStock < 0) {
+      alert('Please enter a valid stock number');
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Please sign in again');
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-product-stock`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
+            product_id: productId,
+            new_stock: newStock,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update stock');
+      }
+
+      setProducts(prev =>
+        prev.map(p => p.id === productId ? { ...p, stock: newStock } : p)
+      );
+      setSyncMessage(`✓ Stock updated successfully`);
+      setTimeout(() => setSyncMessage(''), 3000);
+      cancelEditingStock();
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update stock');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -269,7 +329,41 @@ export function AdminProducts() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                  <p className="text-sm text-gray-500">
+                    Stock: {editingStockId === product.id ? (
+                      <span className="inline-flex items-center gap-1">
+                        <input
+                          type="number"
+                          min="0"
+                          value={newStockValue}
+                          onChange={(e) => setNewStockValue(e.target.value)}
+                          className="w-16 px-2 py-0.5 bg-gray-900 border border-cyan-500/30 rounded text-white text-sm"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => updateStock(product.id)}
+                          className="p-1 text-green-400 hover:text-green-300"
+                          title="Save"
+                        >
+                          <Save className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={cancelEditingStock}
+                          className="p-1 text-red-400 hover:text-red-300"
+                          title="Cancel"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => startEditingStock(product.id, product.stock)}
+                        className="hover:text-cyan-400 transition-colors"
+                      >
+                        {product.stock} <Edit2 className="w-3 h-3 inline ml-1" />
+                      </button>
+                    )}
+                  </p>
                 </div>
               </div>
               <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">

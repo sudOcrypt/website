@@ -6,7 +6,7 @@ export function SellPage() {
       icon: Coins,
       title: 'We Buy Coins',
       description: 'Sell your in-game coins for real money. Competitive rates guaranteed.',
-      rate: '$0.50 / 1M coins',
+      rate: '$0.07 / 1M coins',
       highlight: true,
     },
     {

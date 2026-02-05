@@ -157,6 +157,27 @@ Deno.serve(async (req: Request) => {
                 } catch (error) {
                   console.error("Failed to create Discord ticket:", error);
                 }
+
+                try {
+                  const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
+                  const botToken = Deno.env.get("DISCORD_BOT_TOKEN");
+                  const guildId = Deno.env.get("DISCORD_GUILD_ID");
+
+                  if (customerRoleId && botToken && guildId) {
+                    await fetch(
+                      `https://discord.com/api/v10/guilds/${guildId}/members/${userData.discord_id}/roles/${customerRoleId}`,
+                      {
+                        method: "PUT",
+                        headers: {
+                          "Authorization": `Bot ${botToken}`,
+                          "Content-Type": "application/json",
+                        },
+                      }
+                    );
+                  }
+                } catch (error) {
+                  console.error("Failed to assign customer role:", error);
+                }
               }
             }
           }

@@ -273,7 +273,7 @@ function AppContent() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <PromoBanner />
         <Navbar />
-        <main className="flex-1 pt-14">
+        <main className="flex-1 pt-32">
           <PageTransition>
             <Routes>
               <Route path="/" element={<BannedRedirect><HomePage /></BannedRedirect>} />

@@ -33,7 +33,7 @@ export function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-14 left-0 right-0 z-40 transition-all duration-500 ${
         isScrolled
           ? 'bg-gray-900/80 backdrop-blur-2xl border-b border-white/10 shadow-lg shadow-black/20'
           : 'bg-transparent'

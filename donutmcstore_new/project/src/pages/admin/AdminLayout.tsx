@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom';
-import { Package, ShoppingCart, History, FileBox, BarChart3, Loader2, Shield, Users, Star, Bell } from 'lucide-react';
+import { Package, ShoppingCart, History, FileBox, BarChart3, Loader2, Shield, Users, Star, Bell, Megaphone } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 
 const adminTabs = [
@@ -10,6 +10,7 @@ const adminTabs = [
   { path: '/admin/users', label: 'Users', icon: Users },
   { path: '/admin/reviews', label: 'Reviews', icon: Star },
   { path: '/admin/schematics', label: 'Schematics', icon: FileBox },
+  { path: '/admin/banners', label: 'Banners', icon: Megaphone },
   { path: '/admin/notifications', label: 'Alerts', icon: Bell },
   { path: '/admin/logs', label: 'Logs', icon: History },
 ];

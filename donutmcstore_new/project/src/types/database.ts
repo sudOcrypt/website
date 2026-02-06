@@ -351,6 +351,41 @@ export type Database = {
           created_at?: string;
         };
       };
+      banners: {
+        Row: {
+          id: string;
+          message: string;
+          is_active: boolean;
+          start_date: string | null;
+          end_date: string | null;
+          display_order: number;
+          background_color: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          message: string;
+          is_active?: boolean;
+          start_date?: string | null;
+          end_date?: string | null;
+          display_order?: number;
+          background_color?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          message?: string;
+          is_active?: boolean;
+          start_date?: string | null;
+          end_date?: string | null;
+          display_order?: number;
+          background_color?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 };
@@ -365,6 +400,7 @@ export type LoginLog = Database['public']['Tables']['login_logs']['Row'];
 export type Ban = Database['public']['Tables']['bans']['Row'];
 export type AdminNotification = Database['public']['Tables']['admin_notifications']['Row'];
 export type Category = Database['public']['Tables']['categories']['Row'];
+export type Banner = Database['public']['Tables']['banners']['Row'];
 
 export type CartItem = {
   product: Product;

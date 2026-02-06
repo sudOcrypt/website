@@ -16,9 +16,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log("🎫 create-discord-ticket invoked");
     const { discord_id, username, order_id, items, total } = await req.json();
+    console.log("📋 Received data:", { discord_id, username, order_id, itemCount: items?.length });
 
     if (!discord_id || !username) {
+      console.error("❌ Missing discord_id or username");
       return new Response(
         JSON.stringify({ error: 'Discord ID and username are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -26,6 +29,7 @@ serve(async (req) => {
     }
 
     const channelName = `ticket-${username.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    console.log("🏷️ Creating channel:", channelName);
 
     const createChannelResponse = await fetch(
       `https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/channels`,
@@ -60,6 +64,8 @@ serve(async (req) => {
       }
     );
 
+    console.log("📡 Discord API response status:", createChannelResponse.status);
+
     if (!createChannelResponse.ok) {
       const error = await createChannelResponse.text();
       console.error('Failed to create channel:', error);
@@ -70,6 +76,7 @@ serve(async (req) => {
     }
 
     const channel = await createChannelResponse.json();
+    console.log("✅ Channel created:", channel.id, channel.name);
 
     const itemsList = items?.map((item: any) => 
       `• ${item.name} x${item.quantity} - $${(item.price * item.quantity / 100).toFixed(2)}`

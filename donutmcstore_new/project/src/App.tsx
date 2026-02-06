@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { PromoBanner } from './components/PromoBanner';
 import { HomePage } from './pages/HomePage';
 import { CartPage } from './pages/CartPage';
 import { SellPage } from './pages/SellPage';
@@ -18,6 +19,7 @@ import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminReviews } from './pages/admin/AdminReviews';
 import { AdminSchematics } from './pages/admin/AdminSchematics';
+import { AdminBanners } from './pages/admin/AdminBanners';
 import { AdminNotifications } from './pages/admin/AdminNotifications';
 import { AdminLogs } from './pages/admin/AdminLogs';
 import { useAuthStore } from './stores/authStore';
@@ -269,8 +271,9 @@ function AppContent() {
     <>
       <GlobalBackground />
       <div className="relative z-10 flex flex-col min-h-screen">
+        <PromoBanner />
         <Navbar />
-        <main className="flex-1">
+        <main className="flex-1 pt-14">
           <PageTransition>
             <Routes>
               <Route path="/" element={<BannedRedirect><HomePage /></BannedRedirect>} />
@@ -290,6 +293,7 @@ function AppContent() {
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="reviews" element={<AdminReviews />} />
                 <Route path="schematics" element={<AdminSchematics />} />
+                <Route path="banners" element={<AdminBanners />} />
                 <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="logs" element={<AdminLogs />} />
               </Route>

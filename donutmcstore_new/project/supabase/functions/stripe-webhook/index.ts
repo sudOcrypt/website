@@ -135,8 +135,9 @@ Deno.serve(async (req: Request) => {
                 .eq("order_id", orderId);
 
               if (userData?.discord_id) {
+                console.log("🎫 Attempting to create ticket for user:", userData.discord_id, userData.discord_username);
                 try {
-                  await fetch(`${supabaseUrl}/functions/v1/create-discord-ticket`, {
+                  const ticketResponse = await fetch(`${supabaseUrl}/functions/v1/create-discord-ticket`, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
@@ -154,6 +155,13 @@ Deno.serve(async (req: Request) => {
                       total: order.total_amount,
                     }),
                   });
+                  
+                  const ticketResult = await ticketResponse.json();
+                  if (!ticketResponse.ok) {
+                    console.error("❌ Ticket creation failed:", ticketResult);
+                  } else {
+                    console.log("✅ Ticket created:", ticketResult);
+                  }
                 } catch (error) {
                   console.error("Failed to create Discord ticket:", error);
                 }
@@ -228,6 +236,32 @@ Deno.serve(async (req: Request) => {
                   }
                 } catch (error) {
                   console.error("Failed to send webhook notification:", error);
+                }
+
+                if (userData.email) {
+                  try {
+                    await fetch(
+                      `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                        },
+                        body: JSON.stringify({
+                          to: userData.email,
+                          orderData: {
+                            orderId: orderId,
+                            minecraftUsername: order.minecraft_username,
+                            totalAmount: order.total_amount / 100,
+                            items: orderItems || [],
+                          },
+                        }),
+                      }
+                    );
+                  } catch (emailError) {
+                    console.error("Failed to send email receipt:", emailError);
+                  }
                 }
               }
             }
@@ -338,7 +372,7 @@ Deno.serve(async (req: Request) => {
           });
         }
 
-        if (shouldNotify && event.type === "product.updated") {
+        if (shouldNotify && (event.type === "product.updated" || (event.type === "product.created" && !isNewProduct))) {
           try {
             const restockWebhookUrl = Deno.env.get("DISCORD_RESTOCK_WEBHOOK_URL");
             if (restockWebhookUrl) {
@@ -357,7 +391,7 @@ Deno.serve(async (req: Request) => {
                   body: JSON.stringify({
                     embeds: [{
                       title: isNewProduct ? "🆕 New Product Available!" : "📦 Product Restocked!",
-                      description: productWithPrice.title,
+                      description: productWithPrice.title || product.name,
                       color: isNewProduct ? 0x5865F2 : 0x57F287,
                       fields: [
                         {
@@ -382,6 +416,11 @@ Deno.serve(async (req: Request) => {
                           value: productWithPrice.description.slice(0, 200),
                           inline: false,
                         }] : []),
+                        {
+                          name: "🔗 View on Store",
+                          value: `[Visit DonutMC.Store](https://donutmc.store)`,
+                          inline: false,
+                        },
                       ],
                       thumbnail: productWithPrice.image_url ? {
                         url: productWithPrice.image_url,
@@ -397,6 +436,73 @@ Deno.serve(async (req: Request) => {
             }
           } catch (error) {
             console.error("Failed to send restock notification:", error);
+          }
+        }
+
+        if (isNewProduct && event.type === "product.created") {
+          try {
+            const restockWebhookUrl = Deno.env.get("DISCORD_RESTOCK_WEBHOOK_URL");
+            if (restockWebhookUrl && resolvedActive && newStock > 0 && newStock < 999) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+
+              const { data: productWithPrice } = await supabase
+                .from("products")
+                .select("*")
+                .eq("stripe_product_id", stripeProductId)
+                .single();
+
+              if (productWithPrice && productWithPrice.price > 0) {
+                await fetch(restockWebhookUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    embeds: [{
+                      title: "🆕 New Product Available!",
+                      description: productWithPrice.title || product.name,
+                      color: 0x5865F2,
+                      fields: [
+                        {
+                          name: "💵 Price",
+                          value: `**$${productWithPrice.price.toFixed(2)}**`,
+                          inline: true,
+                        },
+                        {
+                          name: "📊 Stock",
+                          value: `**${newStock} available**`,
+                          inline: true,
+                        },
+                        {
+                          name: "🏷️ Category",
+                          value: productWithPrice.category,
+                          inline: true,
+                        },
+                        ...(productWithPrice.description ? [{
+                          name: "📝 Description",
+                          value: productWithPrice.description.slice(0, 200),
+                          inline: false,
+                        }] : []),
+                        {
+                          name: "🔗 View on Store",
+                          value: `[Visit DonutMC.Store](https://donutmc.store)`,
+                          inline: false,
+                        },
+                      ],
+                      thumbnail: productWithPrice.image_url ? {
+                        url: productWithPrice.image_url,
+                      } : undefined,
+                      footer: {
+                        text: "DonutMC Store",
+                      },
+                      timestamp: new Date().toISOString(),
+                    }],
+                  }),
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Failed to send new product notification:", error);
           }
         }
         break;

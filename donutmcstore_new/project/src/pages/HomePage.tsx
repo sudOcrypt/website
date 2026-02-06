@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Shield, Clock, Zap, ArrowRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
+import { ProductSkeleton } from '../components/Skeletons';
 import { CategoryTabs } from '../components/CategoryTabs';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types/database';
@@ -189,18 +190,10 @@ export function HomePage() {
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className="glass rounded-2xl overflow-hidden"
+                  className="animate-fade-in-up"
                   style={{ animationDelay: `${i * 50}ms` }}
                 >
-                  <div className="aspect-square bg-gradient-to-br from-gray-800/50 to-gray-900/50 animate-pulse">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
-                  </div>
-                  <div className="p-5 space-y-3">
-                    <div className="h-4 bg-gray-700/50 rounded w-1/4 animate-pulse" />
-                    <div className="h-6 bg-gray-700/50 rounded w-3/4 animate-pulse" />
-                    <div className="h-4 bg-gray-700/50 rounded w-full animate-pulse" />
-                    <div className="h-12 bg-gray-700/50 rounded animate-pulse" />
-                  </div>
+                  <ProductSkeleton />
                 </div>
               ))}
             </div>

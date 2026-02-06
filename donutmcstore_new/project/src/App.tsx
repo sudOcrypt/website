@@ -17,6 +17,7 @@ import { AdminOverview } from './pages/admin/AdminOverview';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminInvites } from './pages/admin/AdminInvites';
 import { AdminReviews } from './pages/admin/AdminReviews';
 import { AdminSchematics } from './pages/admin/AdminSchematics';
 import { AdminBanners } from './pages/admin/AdminBanners';
@@ -291,6 +292,7 @@ function AppContent() {
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="users" element={<AdminUsers />} />
+                <Route path="invites" element={<AdminInvites />} />
                 <Route path="reviews" element={<AdminReviews />} />
                 <Route path="schematics" element={<AdminSchematics />} />
                 <Route path="banners" element={<AdminBanners />} />

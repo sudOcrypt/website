@@ -59,7 +59,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-square-checkout`,
         {
           method: 'POST',
           headers: {
@@ -119,7 +119,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Checkout</h2>
-            <p className="text-sm text-gray-400">Secure payment with Stripe</p>
+            <p className="text-sm text-gray-400">Secure payment with Square</p>
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
           <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
             <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />
             <p className="text-sm text-green-400">
-              Payments are secured and processed by Stripe
+              Payments are secured and processed by Square
             </p>
           </div>
 

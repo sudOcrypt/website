@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "supabase": "jsr:@supabase/functions-js/edge-runtime"
+  },
+  "verify_jwt": false
+}

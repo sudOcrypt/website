@@ -60,8 +60,8 @@ export type Database = {
           stock: number;
           is_active: boolean;
           sort_order: number;
-          stripe_product_id: string | null;
-          stripe_price_id: string | null;
+          square_catalog_object_id: string | null;
+          square_variation_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -76,8 +76,8 @@ export type Database = {
           stock?: number;
           is_active?: boolean;
           sort_order?: number;
-          stripe_product_id?: string | null;
-          stripe_price_id?: string | null;
+          square_catalog_object_id?: string | null;
+          square_variation_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -92,8 +92,8 @@ export type Database = {
           stock?: number;
           is_active?: boolean;
           sort_order?: number;
-          stripe_product_id?: string | null;
-          stripe_price_id?: string | null;
+          square_catalog_object_id?: string | null;
+          square_variation_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -106,7 +106,7 @@ export type Database = {
           total_amount: number;
           status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
           notes: string | null;
-          stripe_session_id: string | null;
+          square_checkout_id: string | null;
           discord_id: string | null;
           stock_decremented: boolean;
           created_at: string;
@@ -119,7 +119,7 @@ export type Database = {
           total_amount: number;
           status?: 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
           notes?: string | null;
-          stripe_session_id?: string | null;
+          square_checkout_id?: string | null;
           discord_id?: string | null;
           stock_decremented?: boolean;
           created_at?: string;
@@ -132,7 +132,7 @@ export type Database = {
           total_amount?: number;
           status?: 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
           notes?: string | null;
-          stripe_session_id?: string | null;
+          square_checkout_id?: string | null;
           discord_id?: string | null;
           stock_decremented?: boolean;
           created_at?: string;

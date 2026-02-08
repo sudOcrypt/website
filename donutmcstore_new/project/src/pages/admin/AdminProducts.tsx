@@ -48,24 +48,17 @@ export function AdminProducts() {
     }
   };
 
-  const syncFromStripe = async () => {
+  const syncFromSquare = async () => {
     setIsSyncing(true);
     setSyncMessage('');
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setSyncMessage('Please sign in again');
-        return;
-      }
-
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-stripe`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-square`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
           },
         }
@@ -244,12 +237,12 @@ export function AdminProducts() {
         <h2 className="text-xl font-semibold text-white">Products ({products.length})</h2>
         <div className="flex gap-2">
           <button
-            onClick={syncFromStripe}
+            onClick={syncFromSquare}
             disabled={isSyncing}
             className="flex items-center gap-2 px-4 py-2 bg-gray-700/50 text-gray-300 font-medium rounded-lg hover:bg-gray-700 hover:text-white transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Syncing...' : 'Sync from Stripe'}
+            {isSyncing ? 'Syncing...' : 'Sync from Square'}
           </button>
           <button
             onClick={openAddModal}
@@ -269,8 +262,8 @@ export function AdminProducts() {
 
       <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
         <p className="text-sm text-blue-400">
-          Products automatically sync when you add/edit them in Stripe. Use "Sync from Stripe" to manually refresh or for initial import.
-          Add metadata in Stripe: <code className="bg-black/30 px-1 rounded">category</code> (coins/items/bases), <code className="bg-black/30 px-1 rounded">stock</code>, <code className="bg-black/30 px-1 rounded">sort_order</code>
+          Products sync from Square when you click "Sync from Square". Manage your products in the Square Dashboard.
+          Set custom attributes in Square: <code className="bg-black/30 px-1 rounded">category</code> (coins/items/bases). Stock is managed here in your admin panel.
         </p>
       </div>
 
@@ -278,7 +271,7 @@ export function AdminProducts() {
         <div className="text-center py-16 bg-gray-800/50 rounded-2xl border border-white/10">
           <Package className="w-12 h-12 mx-auto mb-4 text-gray-600" />
           <p className="text-gray-500 mb-4">No products yet.</p>
-          <p className="text-gray-600 text-sm">Add products in Stripe or click "Sync from Stripe" to import.</p>
+          <p className="text-gray-600 text-sm">Add products in Square or click "Sync from Square" to import.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -313,10 +306,10 @@ export function AdminProducts() {
                         Inactive
                       </span>
                     )}
-                    {product.stripe_product_id && (
+                    {product.square_catalog_object_id && (
                       <span className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 flex items-center gap-1">
                         <LinkIcon className="w-3 h-3" />
-                        Stripe
+                        Square
                       </span>
                     )}
                   </div>

@@ -105,7 +105,7 @@ serve(async (req) => {
 
             <div class="security-badges">
               <div class="badge">🔒 SSL Encrypted</div>
-              <div class="badge">🛡️ Stripe Secured</div>
+              <div class="badge">🛡️ Square Secured</div>
               <div class="badge">✓ Verified Store</div>
             </div>
           </div>

@@ -94,10 +94,11 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex flex-wrap items-center justify-center gap-4">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg">
-                <svg className="w-4 h-4" viewBox="0 0 28 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="#635BFF" d="M13.3 0C6.2 0 1.9 4.2 1.9 9.6c0 5.1 3.3 8.5 6.7 10.4.9.5 1.3.8 1.3 1.4v.4c0 .8-.4 1.2-1.2 1.2H7.5c-1.9 0-2.9 1-2.9 2.8 0 1.9 1 2.9 2.9 2.9h1.2c2.9 0 4.6-1.6 4.6-4.5v-1.1c0-2-1.2-3.2-3.2-4.4-2.5-1.5-5-3.6-5-7.5 0-3.7 2.9-6.4 7.2-6.4 3.5 0 6.2 1.7 7.6 4.5.4.8 1.1 1.3 2 1.3.9 0 1.7-.5 2.1-1.3C23.5 4.5 19.5 0 13.3 0z"/>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="24" height="24" rx="4" fill="#000000"/>
+                  <path d="M8 8h8v8H8z" fill="#FFFFFF"/>
                 </svg>
-                <span className="text-xs text-blue-400 font-medium">Secured by Stripe</span>
+                <span className="text-xs text-blue-400 font-medium">Secured by Square</span>
               </div>
               
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-lg">

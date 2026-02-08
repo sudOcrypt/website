@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Menu, X, User, LogOut, Settings, Package, ChevronDown, Sparkles } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useCartStore } from '../stores/cartStore';
+import { getJoinDiscordUrl } from '../lib/discordJoin';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,13 +21,19 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const joinDiscordUrl = getJoinDiscordUrl();
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/sell', label: 'Sell to Us' },
     { to: '/free-money', label: 'Free Money', comingSoon: true },
     { to: '/reviews', label: 'Reviews' },
     { to: '/schematics', label: 'Schematics' },
-    { to: 'https://discord.gg/rtP5YhJFRB', label: 'Discord', external: true },
+    {
+      to: joinDiscordUrl || 'https://discord.gg/rtP5YhJFRB',
+      label: 'Discord',
+      external: true,
+      joinFlow: !!joinDiscordUrl,
+    },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -70,7 +77,7 @@ export function Navbar() {
                 <a
                   key={link.to}
                   href={link.to}
-                  target="_blank"
+                  target={link.joinFlow ? '_self' : '_blank'}
                   rel="noopener noreferrer"
                   className="relative px-4 py-2.5 rounded-xl text-gray-400 hover:text-white transition-all duration-300 group nav-link-glow"
                   style={{ animationDelay: `${index * 50}ms` }}
@@ -236,7 +243,7 @@ export function Navbar() {
                 <a
                   key={link.to}
                   href={link.to}
-                  target="_blank"
+                  target={link.joinFlow ? '_self' : '_blank'}
                   rel="noopener noreferrer"
                   onClick={() => setIsMenuOpen(false)}
                   className="block px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all"

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useSearchParams, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { PromoBanner } from './components/PromoBanner';
@@ -276,11 +276,30 @@ function AppContent() {
     return <>{children}</>;
   };
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [discordJoinedFlash, setDiscordJoinedFlash] = useState(false);
+  useEffect(() => {
+    if (searchParams.get('discord_joined') === '1') {
+      setSearchParams((p) => {
+        p.delete('discord_joined');
+        return p;
+      }, { replace: true });
+      setDiscordJoinedFlash(true);
+      const t = setTimeout(() => setDiscordJoinedFlash(false), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams, setSearchParams]);
+
   return (
     <>
       <GlobalBackground />
       <ScrollToTop />
       <div className="relative z-10 flex flex-col min-h-screen">
+        {discordJoinedFlash && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-medium animate-fade-in-up">
+            You&apos;ve been added to our Discord server.
+          </div>
+        )}
         <PromoBanner />
         <Navbar />
         <main className="flex-1 pt-32">

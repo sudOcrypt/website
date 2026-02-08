@@ -116,6 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
                       'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
                     },
                     body: JSON.stringify({ discord_id: newUser.discord_id }),
@@ -135,6 +136,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                   email: session.user.email ?? existingUser.email,
                 })
                 .eq('id', session.user.id);
+
+              // Assign Discord role on every sign-in (so they get it if they joined server later)
+              if (existingUser.discord_id) {
+                try {
+                  await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assign-discord-role`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
+                      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    },
+                    body: JSON.stringify({ discord_id: existingUser.discord_id }),
+                  });
+                } catch (error) {
+                }
+              }
 
               let ipAddress = null;
               let isVpnSuspected = false;

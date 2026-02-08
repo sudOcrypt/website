@@ -85,6 +85,7 @@ Go to your Discord server and type:
    DISCORD_BOT_TOKEN=<your_bot_token_from_discord_developer_portal>
    DISCORD_GUILD_ID=<your_server_id>
    DISCORD_NOTIFICATION_CHANNEL_ID=<your_channel_id>
+   DISCORD_MEMBER_ROLE_ID=<role_id_to_give_on_join>   # Optional: role new members get when they join
    SUPABASE_URL=<your_supabase_url>
    SUPABASE_SERVICE_ROLE_KEY=<your_supabase_service_role_key>
    REWARD_PER_INVITE=250000

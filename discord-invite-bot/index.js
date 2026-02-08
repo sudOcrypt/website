@@ -19,6 +19,7 @@ const supabase = createClient(
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID;
 const NOTIFICATION_CHANNEL_ID = process.env.DISCORD_NOTIFICATION_CHANNEL_ID;
+const MEMBER_ROLE_ID = process.env.DISCORD_MEMBER_ROLE_ID || null; // Role to give when user joins (optional)
 const REWARD_PER_INVITE = parseInt(process.env.REWARD_PER_INVITE) || 250000;
 const MINIMUM_INVITES = parseInt(process.env.MINIMUM_INVITES) || 3;
 const VALIDATION_HOURS = parseInt(process.env.VALIDATION_HOURS) || 5;
@@ -237,6 +238,11 @@ async function notifyMilestone(userId, username, validCount) {
 
 client.on('ready', async () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
+  if (MEMBER_ROLE_ID) {
+    console.log(`📌 Role-on-join enabled: will assign role ID ${MEMBER_ROLE_ID}`);
+  } else {
+    console.log(`⚠️ DISCORD_MEMBER_ROLE_ID not set - users will NOT get a role on join`);
+  }
   await registerCommands();
   await loadInvites();
   
@@ -247,6 +253,20 @@ client.on('ready', async () => {
 
 client.on('guildMemberAdd', async (member) => {
   if (member.user.bot) return;
+  console.log(`👋 guildMemberAdd: ${member.user.username} (${member.id})`);
+
+  // Give "member" role on join if configured
+  if (MEMBER_ROLE_ID) {
+    try {
+      await member.roles.add(MEMBER_ROLE_ID);
+      console.log(`✅ Assigned role to ${member.user.username} on join`);
+    } catch (err) {
+      console.error(`❌ Failed to assign role to ${member.user.username}:`, err.code || err.message, err.message);
+      if (err.code === 50013) console.error('   → Bot needs "Manage Roles" and its role must be ABOVE the target role in Server Settings → Roles');
+    }
+  } else {
+    console.log(`   (Skipped role: DISCORD_MEMBER_ROLE_ID not set)`);
+  }
 
   const inviteData = await checkInviteUsed(member);
   

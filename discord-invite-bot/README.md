@@ -193,6 +193,16 @@ MINIMUM_INVITES=5  # Change from 3 to 5
 VALIDATION_HOURS=24  # Change from 5 hours to 24 hours
 ```
 
+### **Give a role when users join:**
+
+To auto-assign a role (e.g. "Member") when someone joins the server, add to `.env`:
+
+```env
+DISCORD_MEMBER_ROLE_ID=1234567890123456789   # Your role's ID (right-click role in Discord → Copy ID)
+```
+
+The bot's role must be **above** this role in Server Settings → Roles, or it can't assign it.
+
 ---
 
 ## 🐛 Troubleshooting

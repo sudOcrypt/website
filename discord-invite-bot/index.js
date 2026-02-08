@@ -2,7 +2,12 @@ import { Client, GatewayIntentBits, REST, Routes, EmbedBuilder, PermissionFlagsB
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: '.env' });
+// Debug: confirm .env is loaded (don't log the actual role ID)
+const hasMemberRoleId = !!(process.env.DISCORD_MEMBER_ROLE_ID && process.env.DISCORD_MEMBER_ROLE_ID.trim());
+if (!hasMemberRoleId) {
+  console.warn('⚠️ DISCORD_MEMBER_ROLE_ID is missing or empty. Check your .env file (not .env.example) in the same folder as index.js.');
+}
 
 const client = new Client({
   intents: [
@@ -236,10 +241,11 @@ async function notifyMilestone(userId, username, validCount) {
   });
 }
 
-client.on('ready', async () => {
+client.once('ready', async () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
   if (MEMBER_ROLE_ID) {
     console.log(`📌 Role-on-join enabled: will assign role ID ${MEMBER_ROLE_ID}`);
+    console.log(`   When someone joins you should see: "👋 guildMemberAdd" then "✅ Assigned role". If not, enable Server Members Intent in Discord Developer Portal → Bot.`);
   } else {
     console.log(`⚠️ DISCORD_MEMBER_ROLE_ID not set - users will NOT get a role on join`);
   }

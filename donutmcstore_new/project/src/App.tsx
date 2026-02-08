@@ -190,6 +190,14 @@ function GlobalBackground() {
   );
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function PageTransition({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [displayChildren, setDisplayChildren] = useState(children);
@@ -271,6 +279,7 @@ function AppContent() {
   return (
     <>
       <GlobalBackground />
+      <ScrollToTop />
       <div className="relative z-10 flex flex-col min-h-screen">
         <PromoBanner />
         <Navbar />
